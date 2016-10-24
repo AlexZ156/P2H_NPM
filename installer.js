@@ -48,7 +48,7 @@ function downloadBuild() {
 
 
 function startInstall() {
-	console(' !!!!!!!!!!!!!!!!!a asasda !!!!!!!!!!!')
+	console.log(' !!!!!!!!!!!!!!!!!a asasda !!!!!!!!!!!')
 	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
 		if (!result) {
 			let tempFolder = 'markup';
