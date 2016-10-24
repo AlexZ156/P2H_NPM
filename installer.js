@@ -46,58 +46,49 @@ function downloadBuild() {
 	// console.log(buildOptions)
 }
 
-fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
-	var child = exec('npm install');
-	child.stdout.pipe(process.stdout);
-	child.stderr.pipe(process.stderr);
-	child.on('exit', function() {
-		console.log(654654654)
-		// activeProcessIndex++;
-		// startProcess();
-	});
+function startInstall() {
+	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
+		if (!result) {
+			let tempFolder = 'markup';
+			let child = exec('git clone https://github.com/AlexZ156/markup.git ' + '"' + tempFolder + '"');
+			child.stdout.pipe(process.stdout);
+			child.stderr.pipe(process.stderr);
+			child.on('exit', function() {
+				del.sync(tempFolder + '/.git');
+				let child = exec('npm i');
+				child.stdout.pipe(process.stdout);
+				child.stderr.pipe(process.stderr);
+				child.on('exit', function() {
 
-
-	return
-	if (!result) {
-		let tempFolder = 'markup';
-		let child = exec('git clone https://github.com/AlexZ156/markup.git ' + '"' + tempFolder + '"');
-		child.stdout.pipe(process.stdout);
-		child.stderr.pipe(process.stderr);
-		child.on('exit', function() {
-			del.sync(tempFolder + '/.git');
-			let child = exec('npm i');
+					console.log(1111111111)
+				});
+				console.log(222222222)
+			});
+		} else {
+			/*let child = exec(path.resolve(__dirname, 'markup') + ' npm i');
 			child.stdout.pipe(process.stdout);
 			child.stderr.pipe(process.stderr);
 			child.on('exit', function() {
 
 				console.log(1111111111)
 			});
-			console.log(222222222)
-		});
-	} else {
-		let child = exec(path.resolve(__dirname, 'markup') + ' npm i');
-		child.stdout.pipe(process.stdout);
-		child.stderr.pipe(process.stderr);
-		child.on('exit', function() {
 
-			console.log(1111111111)
-		});
+			console.log(333333, path.resolve(__dirname, 'markup') + ' npm i')*/
+		}
+	});
+}
 
-		console.log(333333, path.resolve(__dirname, 'markup') + ' npm i')
+
+// CLI exports
+module.exports = {
+	interpret: function(argv) {
+		var cliArgs = argv.slice(2),
+			customFileName = cliArgs[0];
+
+		if(customFileName) {
+			fileName = customFileName;
+		}
+
+		startInstall();
 	}
-});
-
-// inquirer.prompt(questions.start).then(checkQuestion);
-
-// var child = exec('git clone https://github.com/AlexZ156/gulp.test.build.git');
-// child.stdout.pipe(process.stdout);
-// child.stderr.pipe(process.stderr);
-// child.on('exit', function() {
-// 	console.log(__dirname)
-// 	/*del.sync(tempFolder + '/.git');
-// 	fs.copySync(tempFolder, projectConfig.path);
-// 	fs.removeSync(tempFolder);*/
-// 	// currentCloneIndex++;
-// 	// cloneRepo();
-// });
-
+};
