@@ -46,7 +46,9 @@ function downloadBuild() {
 	// console.log(buildOptions)
 }
 
+
 function startInstall() {
+	console(' !!!!!!!!!!!!!!!!!a asasda !!!!!!!!!!!')
 	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
 		if (!result) {
 			let tempFolder = 'markup';
@@ -55,7 +57,9 @@ function startInstall() {
 			child.stderr.pipe(process.stderr);
 			child.on('exit', function() {
 				del.sync(tempFolder + '/.git');
-				let child = exec('npm i');
+
+				console.log('!!!!!!!' + path.resolve(__dirname, '/markup') + '/' + ' npm i')
+				let child = exec(path.resolve(__dirname, '/markup') + '/' + ' npm i');
 				child.stdout.pipe(process.stdout);
 				child.stderr.pipe(process.stderr);
 				child.on('exit', function() {
