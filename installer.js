@@ -60,7 +60,9 @@ function startInstall() {
 				del.sync(tempFolder + '/.git');
 
 				console.log(123321123321)
-				let child = exec('npm install "markup"');
+				let child = exec('npm install', {
+					cwd: path.resolve(__dirname, 'markup')
+				});
 				child.stdout.pipe(process.stdout);
 				child.stderr.pipe(process.stderr);
 				child.on('exit', function() {
