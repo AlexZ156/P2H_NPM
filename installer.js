@@ -50,6 +50,7 @@ function downloadBuild() {
 function startInstall() {
 	console.log(' !!!!!!!!!!!!!!!!!a asasda !!!!!!!!!!!')
 	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
+		console.log(result)
 		if (!result) {
 			let tempFolder = 'markup';
 			let child = exec('git clone https://github.com/AlexZ156/markup.git ' + '"' + tempFolder + '"');
@@ -58,15 +59,13 @@ function startInstall() {
 			child.on('exit', function() {
 				del.sync(tempFolder + '/.git');
 
-				console.log('!!!!!!!' + path.resolve(__dirname, '/markup') + '/' + ' npm i')
-				let child = exec(path.resolve(__dirname, '/markup') + '/' + ' npm i');
+				console.log(123321123321)
+				let child = exec('npm install "markup"');
 				child.stdout.pipe(process.stdout);
 				child.stderr.pipe(process.stderr);
 				child.on('exit', function() {
 
-					console.log(1111111111)
 				});
-				console.log(222222222)
 			});
 		} else {
 			/*let child = exec(path.resolve(__dirname, 'markup') + ' npm i');
