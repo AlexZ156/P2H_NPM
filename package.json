@@ -1,6 +1,6 @@
 {
   "name": "p2hm",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "markup boilerplate installer",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,9 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/AlexZ156/P2H_NPM/issues"
+  },
+  "bin": {
+    "p2hm": "./cli.js"
   },
   "homepage": "https://github.com/AlexZ156/P2H_NPM#readme",
   "dependencies": {
