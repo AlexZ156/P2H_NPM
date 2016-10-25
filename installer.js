@@ -107,19 +107,21 @@ function downloadBuild(key) {
 
 	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
 		let tempFolder = 'markup';
-		let child = exec('git clone -n https://github.com/AlexZ156/markup-boilerplate-installer.git --depth 1 ' + '"' + tempFolder + '"');
+		let child = exec('git clone -n https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"');
 		child.stdout.pipe(process.stdout);
 		child.stderr.pipe(process.stderr);
 		child.on('exit', function() {
 			// del.sync(tempFolder + '/.git');
+
+
 			process.chdir(path.resolve(__dirname, 'markup'));
 			let child2 = exec('git checkout HEAD ' + key);
 			child2.stdout.pipe(process.stdout);
 			child2.stderr.pipe(process.stderr);
 			child2.on('exit', function() {
-				// del.sync(tempFolder + '/.git');
-				console.log(121111)
-
+				fs.rename(path.resolve(__dirname, 'markup/' + key), path.resolve(__dirname, 'markup/' + 'markup'), function() {
+					del.sync(path.resolve(__dirname, 'markup/.git'));
+				})
 			});
 		});
 	});
@@ -132,7 +134,7 @@ function downloadBuild(key) {
 		child.on('exit', function() {
 			del.sync(tempFolder + '/.git');
 
-			
+
 		});
 	});
 }
@@ -153,7 +155,7 @@ function startInstall() {
 			child.on('exit', function() {
 				del.sync(tempFolder + '/.git');
 
-				
+
 			});
 		} else {
 			runShellCommands('npm install', path.resolve(__dirname, 'markup'), function() {
