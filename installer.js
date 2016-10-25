@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 let buildOptions = {};
 const request = require('request');
+const fsExtra = require('fs.extra');
 const projectConfig = {
 	start: {
 		type: 'list',
@@ -101,40 +102,26 @@ const showMenu = (resultObj, prevMenu) => {
 
 function downloadBuild(key) {
 	let tempFolder = 'markup';
-	console.log('key ======= ', key)
-	console.log('key ======= ', projectConfig[key])
-	console.log('git clone https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"')
 
-	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
-		let tempFolder = 'markup';
+	fs.stat(path.resolve(__dirname, tempFolder), function(err, result) {
+		// let tempFolder = 'markup';
 		let child = exec('git clone -n https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"');
 		child.stdout.pipe(process.stdout);
 		child.stderr.pipe(process.stderr);
 		child.on('exit', function() {
-			// del.sync(tempFolder + '/.git');
-
-
-			process.chdir(path.resolve(__dirname, 'markup'));
+			process.chdir(path.resolve(__dirname, tempFolder));
 			let child2 = exec('git checkout HEAD ' + key);
 			child2.stdout.pipe(process.stdout);
 			child2.stderr.pipe(process.stderr);
 			child2.on('exit', function() {
-				fs.rename(path.resolve(__dirname, 'markup/' + key), path.resolve(__dirname, 'markup/' + 'markup'), function() {
-					del.sync(path.resolve(__dirname, 'markup/.git'));
-				})
+				fsExtra.copyRecursive(path.resolve(__dirname, tempFolder +'/' + key), path.resolve(__dirname, tempFolder), function(err) {
+					if (err) {
+						throw err;
+					}
+					del.sync([path.resolve(__dirname, tempFolder +'/.git'), path.resolve(__dirname, tempFolder +'/' + key)]);
+
+				});
 			});
-		});
-	});
-	return
-	fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
-		let tempFolder = 'markup';
-		let child = exec('git clone https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"');
-		child.stdout.pipe(process.stdout);
-		child.stderr.pipe(process.stderr);
-		child.on('exit', function() {
-			del.sync(tempFolder + '/.git');
-
-
 		});
 	});
 }
