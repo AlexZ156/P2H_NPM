@@ -5,9 +5,12 @@ const del = require('del');
 const fs = require('fs');
 const path = require('path');
 let buildOptions = {};
+const tempFolder = 'markup';
 const request = require('request');
 const fsExtra = require('fs.extra');
+const simpleGit = require('simple-git')(path.resolve(__dirname));
 const projectConfig = {
+	startAction: 'npm run start',
 	start: {
 		type: 'list',
 		name: 'projectType',
@@ -30,15 +33,15 @@ const projectConfig = {
 		choices: [
 			{
 				name: 'Continue project',
-				value: 'gulp'
+				value: 'npm run start'
 			},
 			{
 				name: 'Update project modules',
-				value: 'npm up'
+				value: 'npm run update'
 			},
 			{
 				name: 'Release project (ready for QA)',
-				value: 'gulp dist'
+				value: 'npm run dist'
 			}
 		]
 	},
@@ -70,7 +73,7 @@ const projectConfig = {
 		name: 'cms',
 		message: 'Select CMS:',
 		choices: ['WordPress', 'Magento', 'Other CMS']
-	},
+	}/*,
 	'base-markup': {
 		url: 'url-base-markup'
 	},
@@ -82,119 +85,85 @@ const projectConfig = {
 	},
 	'base-markup+materialize': {
 		url: 'url-base-markup+materialize'
-	}
+	}*/
 };
 
+const runShellCommands = (command, callback) => {
 
+	console.log('command == >', command)
+	goToTempFolder();
+	const child = exec(command);
+	child.stdout.pipe(process.stdout);
+	child.stderr.pipe(process.stderr);
+	child.on('exit', function() {
+		try {
+			callback();
+		} catch(err) {}
+	});
+};
 
+const doAction = (action) => {
+	runShellCommands(action, path.resolve(__dirname, tempFolder))
+};
 
 const showMenu = (resultObj, prevMenu) => {
 	const key = prevMenu && resultObj[prevMenu.name] || null;
 	const newQuestion = key ? projectConfig[key] : resultObj;
 
-	if (!prevMenu || key) {
-		return inquirer.prompt(newQuestion).then((answer) => showMenu.apply(undefined, [answer, resultObj]));
+	if (newQuestion) {
+		if (!prevMenu || key) {
+			return inquirer.prompt(newQuestion).then((answer) => showMenu.apply(undefined, [answer, resultObj]));
+		} else {
+			downloadTemplate(resultObj[Object.keys(resultObj)[0]]);
+			return;
+		}
 	} else {
-		downloadBuild(resultObj[Object.keys(resultObj)[0]]);
-		return;
+		doAction(key);
 	}
 };
 
-function downloadBuild(key) {
-	let tempFolder = 'markup';
-
-	fs.stat(path.resolve(__dirname, tempFolder), function(err, result) {
-		// let tempFolder = 'markup';
-		let child = exec('git clone -n https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"');
-		child.stdout.pipe(process.stdout);
-		child.stderr.pipe(process.stderr);
-		child.on('exit', function() {
-			process.chdir(path.resolve(__dirname, tempFolder));
-			let child2 = exec('git checkout HEAD ' + key);
-			child2.stdout.pipe(process.stdout);
-			child2.stderr.pipe(process.stderr);
-			child2.on('exit', function() {
-				fsExtra.copyRecursive(path.resolve(__dirname, tempFolder +'/' + key), path.resolve(__dirname, tempFolder), function(err) {
-					if (err) {
-						throw err;
-					}
-					del.sync([path.resolve(__dirname, tempFolder +'/.git'), path.resolve(__dirname, tempFolder +'/' + key)]);
-
-				});
-			});
-		});
-	});
-}
-
-
-function startInstall() {
-	/*console.log(projectConfig.start)
-	inquirer.prompt(projectConfig.start).then(function() {
-		console.log(1111111)
-	})*/
-	showMenu(projectConfig.start);
-	/*fs.stat(path.resolve(__dirname, 'markup'), function(err, result) {
-		if (!result) {
-			let tempFolder = 'markup';
-			let child = exec('git clone https://github.com/AlexZ156/markup.git ' + '"' + tempFolder + '"');
-			child.stdout.pipe(process.stdout);
-			child.stderr.pipe(process.stderr);
-			child.on('exit', function() {
-				del.sync(tempFolder + '/.git');
-
-
-			});
-		} else {
-			runShellCommands('npm install', path.resolve(__dirname, 'markup'), function() {
-				// console.log('!!!!!!!!!!!!!!!!!!!!!!!!')
-			});
-		}
-	});*/
-}
-
-const commandArr = ['npm install', 'gulp'];
-
-function runShellCommands(commands, cwd, callback) {
-	var activeProcessIndex = 0;
-
-	var startProcess = function() {
-		var command = 'npm install',
-			child;
-
-		if(command) {
-			console.log('Starting shell command: "' + command + '"');
-			child = exec(command);
-			child.stdout.pipe(process.stdout);
-			child.stderr.pipe(process.stderr);
-			child.on('exit', function() {
-				// activeProcessIndex++;
-				startProcess();
-			});
-		} else if(typeof callback === 'function') {
-			callback();
-		}
-	};
-
-	if(commands && commands.length) {
-		process.chdir(cwd);
-		startProcess();
-	}
-}
-
-function startTask() {
-	let currDir = path.resolve(__dirname, 'markup');
-	console.log(currDir)
-
-	process.chdir(currDir);
-
-	let child = exec('npm install');
+const downloadTemplate = (projectName) => {
+	let child = exec('git clone -n https://github.com/AlexZ156/markup-boilerplate-installer.git ' + '"' + tempFolder + '"');
 	child.stdout.pipe(process.stdout);
 	child.stderr.pipe(process.stderr);
 	child.on('exit', function() {
-		console.log('-----!!!!!-----');
+
+		console.log(1111)
+		// return;
+		goToTempFolder();
+		let child2 = exec('git checkout HEAD ' + projectName);
+		child2.stdout.pipe(process.stdout);
+		child2.stderr.pipe(process.stderr);
+		child2.on('exit', function() {
+			fsExtra.copyRecursive(path.resolve(__dirname, tempFolder +'/' + projectName), path.resolve(__dirname, tempFolder), function(err) {
+				if (err) {
+					throw err;
+				}
+				del.sync([path.resolve(__dirname, tempFolder +'/.git'), path.resolve(__dirname, tempFolder +'/' + projectName)]);
+				doAction(projectConfig.startAction);
+			});
+		});
 	});
+};
+
+const goToTempFolder = () => {
+	process.chdir(path.resolve(__dirname, tempFolder));
 }
 
+const checkTemplExistFolder = () => {
+	fs.stat(path.resolve(__dirname, tempFolder), function(err, result) {
+		if (!result) {
+			showMenu(projectConfig.start);
+		} else {
+			showMenu(projectConfig.action);
+		}
+	});
+};
+
+
+function startInstall() {
+	checkTemplExistFolder();
+}
 
 // CLI exports
 module.exports = {
